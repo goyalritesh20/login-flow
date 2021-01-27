@@ -62,13 +62,12 @@ def forgot_password(request):
 def reset_password(request,key):
 
     if not ForgotPassword.objects.filter(unique_key=key).exists():
-        ctx = {'error':'Invalid Link','invalid':True}
+        ctx = {'error':'Invalid Link or Link Expired','invalid':True}
         return render(request,'resetpassword.html',ctx)
 
     if request.method == 'POST':
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirmpassword')
-        print(password,confirm_password,key)
 
         if not password or not confirm_password:
             ctx = {'error':'Please enter both Password and confirm password'}
@@ -83,6 +82,7 @@ def reset_password(request,key):
             user = obj.user
             user.set_password(password)
             user.save()
+            obj.delete()
             return render(request,'resetdone.html')
 
     return render(request,'resetpassword.html')
