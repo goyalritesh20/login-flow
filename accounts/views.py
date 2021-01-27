@@ -43,13 +43,13 @@ def forgot_password(request):
             user = User.objects.get(email=email)
             obj, created = ForgotPassword.objects.get_or_create(user=user,defaults={'unique_key': uuid.uuid4().hex},)
             if not created:
-                ctx = {'error':'Please check your email for password reset link'}
+                ctx = {'message':'Please check your email for password reset link'}
                 return render(request,'forgotpassword.html',ctx)
             else:
                 # send_resetpassword_link() http://localhost:8000/resetpassword/unique_key/
                 link = 'http://localhost:8000/resetpassword/{}'.format(obj.unique_key)
                 print(link)
-                ctx = {'error':'A link has been sent to your email for password reset'}
+                ctx = {'message':'A link has been sent to your email for password reset'}
                 return render(request,'forgotpassword.html',ctx)
 
         else:
