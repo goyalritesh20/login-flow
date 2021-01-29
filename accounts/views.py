@@ -2,9 +2,10 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse
-import uuid
+import uuid, random
 from accounts.models import ForgotPassword
 from django.contrib.auth.models import User
+from django.urls import reverse
 
 # Create your views here.
 
@@ -42,15 +43,27 @@ def forgot_password(request):
         if email and User.objects.filter(email=email).exists():
             user = User.objects.get(email=email)
             obj, created = ForgotPassword.objects.get_or_create(user=user,defaults={'unique_key': uuid.uuid4().hex},)
-            if not created:
-                ctx = {'message':'Please check your email for password reset link'}
-                return render(request,'forgotpassword.html',ctx)
+            if request.GET.get('otp'):
+                if not obj.otp:
+                    obj.otp = random.randint(123456,987654)
+                    obj.save()
+                print(obj.otp)
+                link = reverse('reset-password-otp')
+                if not created:
+                    ctx = {'message':'Please check your email for otp','link':link}
+                else:
+                    # send_resetpassword_otp()
+                    ctx = {'message':'An OTP has been sent to your email for password reset','link':link}
+
             else:
-                # send_resetpassword_link() http://localhost:8000/resetpassword/unique_key/
                 link = 'http://localhost:8000/resetpassword/{}'.format(obj.unique_key)
                 print(link)
-                ctx = {'message':'A link has been sent to your email for password reset'}
-                return render(request,'forgotpassword.html',ctx)
+                if not created:
+                    ctx = {'message':'Please check your email for password reset link'}
+                else:
+                    # send_resetpassword_link()
+                    ctx = {'message':'A link has been sent to your email for password reset'}
+            return render(request,'forgotpassword.html',ctx)
 
         else:
             ctx = {'error':'Invalid email address'}
@@ -76,9 +89,9 @@ def reset_password(request,key):
         elif password != confirm_password:
             ctx = {'error':'Password and confirm password should be same'}
             return render(request,'resetpassword.html',ctx)
-        
+
         else:
-            obj = ForgotPassword.objects.get(unique_key=key)         
+            obj = ForgotPassword.objects.get(unique_key=key)
             user = obj.user
             user.set_password(password)
             user.save()
@@ -86,3 +99,34 @@ def reset_password(request,key):
             return render(request,'resetdone.html')
 
     return render(request,'resetpassword.html')
+
+
+def reset_password_otp(request):
+
+    if request.method == 'POST':
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirmpassword')
+        otp = request.POST.get('otp')
+
+        if not (password and confirm_password and otp):
+            ctx = {'error':'Please enter all the mandatory information'}
+            return render(request,'resetpasswordotp.html',ctx)
+
+        elif password != confirm_password:
+            ctx = {'error':'Password and confirm password should be same'}
+            return render(request,'resetpasswordotp.html',ctx)
+
+        else:
+            try:
+                obj = ForgotPassword.objects.get(otp=otp)
+            except Exception:
+                ctx = {'error':'Incorrect OTP entered'}
+                return render(request,'resetpasswordotp.html',ctx)
+
+            user = obj.user
+            user.set_password(password)
+            user.save()
+            obj.delete()
+            return render(request,'resetdone.html')
+
+    return render(request,'resetpasswordotp.html')

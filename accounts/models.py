@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 class ForgotPassword(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     unique_key = models.CharField(max_length=50)
+    otp = models.IntegerField(null=True)
 
     def __str__(self):
         return '{}'.format(self.user.username)
