@@ -28,7 +28,7 @@ def user_login(request):
         else:
             ctx = {'error':'Invalid username and password'}
             return render(request,'userlogin.html',ctx)
-    
+
     return render(request,'userlogin.html')
 
 
@@ -53,7 +53,7 @@ def forgot_password(request):
                     ctx = {'message':'Please check your email for otp','link':link}
                 else:
                     # send_resetpassword_otp()
-                    ctx = {'message':'An OTP has been sent to your email for password reset','link':link}
+                    ctx = {'message':'An OTP has been sent to your email for password reset valid for 30 seconds','link':link}
 
             else:
                 link = 'http://localhost:8000/resetpassword/{}'.format(obj.unique_key)
@@ -73,10 +73,18 @@ def forgot_password(request):
 
 
 def reset_password(request,key):
+    template_name = 'resetpassword.html'
+    ctx = {}
+    obj = ForgotPassword.objects.filter(unique_key=key).first()
 
-    if not ForgotPassword.objects.filter(unique_key=key).exists():
+    if not obj:
         ctx = {'error':'Invalid Link or Link Expired','invalid':True}
-        return render(request,'resetpassword.html',ctx)
+        return render(request, template_name, ctx)
+
+    if obj.is_expired():
+        obj.delete()
+        ctx = {'error':'Link has been expired','invalid':True}
+        return render(request, template_name, ctx)
 
     if request.method == 'POST':
         password = request.POST.get('password')
@@ -84,21 +92,20 @@ def reset_password(request,key):
 
         if not password or not confirm_password:
             ctx = {'error':'Please enter both Password and confirm password'}
-            return render(request,'resetpassword.html',ctx)
+            return render(request, template_name, ctx)
 
         elif password != confirm_password:
             ctx = {'error':'Password and confirm password should be same'}
-            return render(request,'resetpassword.html',ctx)
+            return render(request, template_name, ctx)
 
         else:
-            obj = ForgotPassword.objects.get(unique_key=key)
             user = obj.user
             user.set_password(password)
             user.save()
             obj.delete()
-            return render(request,'resetdone.html')
+            return render(request, 'resetdone.html', ctx)
 
-    return render(request,'resetpassword.html')
+    return render(request, template_name, ctx)
 
 
 def reset_password_otp(request):
@@ -107,6 +114,17 @@ def reset_password_otp(request):
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirmpassword')
         otp = request.POST.get('otp')
+
+        obj = ForgotPassword.objects.filter(otp=otp).first()
+
+        if not obj:
+            ctx = {'error':'Invalid OTP or OTP Expired','invalid':True}
+            return render(request, 'resetpasswordotp.html',ctx)
+
+        if obj.is_expired():
+            obj.delete()
+            ctx = {'error':" OTP expired",'invalid':True}
+            return render(request,'resetpasswordotp.html',ctx)
 
         if not (password and confirm_password and otp):
             ctx = {'error':'Please enter all the mandatory information'}
@@ -117,12 +135,6 @@ def reset_password_otp(request):
             return render(request,'resetpasswordotp.html',ctx)
 
         else:
-            try:
-                obj = ForgotPassword.objects.get(otp=otp)
-            except Exception:
-                ctx = {'error':'Incorrect OTP entered'}
-                return render(request,'resetpasswordotp.html',ctx)
-
             user = obj.user
             user.set_password(password)
             user.save()
