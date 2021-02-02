@@ -4,7 +4,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse
 import uuid, random
 from accounts.models import ForgotPassword
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+User = get_user_model()
 from django.urls import reverse
 
 # Create your views here.

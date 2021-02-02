@@ -1,6 +1,6 @@
 [
 {
-    "model": "auth.user",
+    "model": "accounts.user",
     "pk": 1,
     "fields": {
         "password": "pbkdf2_sha256$216000$jAj0OPqwiink$RyNVx2jhFGDGGAuRDAHHcpYYrNdIvsSSgvU25e+qsjE=",
@@ -14,7 +14,8 @@
         "is_active": true,
         "date_joined": "2021-01-25T10:45:23.549Z",
         "groups": [],
-        "user_permissions": []
+        "user_permissions": [],
+        "dob": "1990-01-01"
     }
 }
 ]
