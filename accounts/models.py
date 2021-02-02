@@ -1,11 +1,19 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
+from django.conf import settings
 
 # Create your models here.
 
+class User(AbstractUser):
+    GENDER_CHOICES = (('M','Male'),('F','Female'))
+    gender = models.CharField(choices=GENDER_CHOICES, max_length=50)
+    bio = models.TextField()
+    dob = models.DateField()
+
+
 class ForgotPassword(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     unique_key = models.CharField(max_length=50)
     otp = models.IntegerField(null=True)
     created_on = models.DateTimeField(auto_now_add=True)
@@ -16,3 +24,5 @@ class ForgotPassword(models.Model):
 
     def __str__(self):
         return '{}'.format(self.user.username)
+
+
