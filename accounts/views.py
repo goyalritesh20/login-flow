@@ -7,6 +7,7 @@ from accounts.models import ForgotPassword
 from django.contrib.auth import get_user_model
 User = get_user_model()
 from django.urls import reverse
+from accounts.forms import UserForm
 
 # Create your views here.
 
@@ -143,3 +144,18 @@ def reset_password_otp(request):
             return render(request,'resetdone.html')
 
     return render(request,'resetpasswordotp.html')
+
+
+def register(request):
+    ctx = {}
+    if request.method == 'POST':
+        form = UserForm(request.POST)
+        if form.is_valid():
+            user_obj = form.save()
+            return redirect('/')
+
+    else:
+        form = UserForm()
+
+    ctx['form'] = form
+    return render(request,'register.html', ctx)

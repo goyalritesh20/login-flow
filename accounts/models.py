@@ -8,7 +8,7 @@ from django.conf import settings
 class User(AbstractUser):
     GENDER_CHOICES = (('M','Male'),('F','Female'))
     gender = models.CharField(choices=GENDER_CHOICES, max_length=50)
-    bio = models.TextField()
+    bio = models.TextField(blank=True)
     dob = models.DateField()
 
 

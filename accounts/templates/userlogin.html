@@ -12,10 +12,10 @@
   <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
   {% if error %}
   <div class="alert alert-danger" role="alert">
-    {{error}}  
+    {{error}}
   </div>
   {% endif %}
-      
+
   <label for="inputUser" class="visually-hidden">Username</label>
   <input type="text" id="inputUser" class="form-control" placeholder="Username" name = "username" required autofocus>
   <label for="inputPassword" class="visually-hidden">Password</label>
@@ -23,6 +23,9 @@
   <button class="w-100 btn btn-lg btn-primary" type="submit">Sign in</button>
   <a href="{% url 'forgot-password' %}"> Forgot Password via Email</a><br>
   <a href="{% url 'forgot-password' %}?otp=true"> Forgot Password via OTP</a>
-  <p class="mt-5 mb-3 text-muted">&copy; 2020-2021</p>
 </form>
+
+  <a href="{% url 'register' %}"> Register </a>
+  <p class="mt-5 mb-3 text-muted">&copy; 2020-2021</p>
+
 {% endblock %}
