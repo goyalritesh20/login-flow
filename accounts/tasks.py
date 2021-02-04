@@ -37,8 +37,27 @@ def send_mail_new_user_register(user, pwd_reset_link):
     trigger_send_email(subject, message, recipients)
 
 
-def send_mail_for_forgot_password(user):
-    pass
+def send_mail_for_reset_password(user, pwd_reset_link):
+    pwd_reset_link = "{0}{1}".format(settings.PORTAL_URL, pwd_reset_link)
+    subject = "Reset Your Password"
+    message = """
+    Hello {user_fname} {user_lname},
+
+    We have received your request for change of password. This email contains the information
+    that you need to change your password
+
+    You can reset you password using following link:
+    {pwd_reset_link}
+
+    Thanks!
+    Portal Team
+
+    Please do not reply to this auto-generated email.
+    """.format(user_fname=user.first_name, user_lname=user.last_name, pwd_reset_link=pwd_reset_link)
+
+    recipients = [user.email]
+    trigger_send_email(subject, message, recipients)
+
 
 def send_mail_for_forgot_password_otp(user):
     pass

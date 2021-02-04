@@ -8,7 +8,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 from django.urls import reverse
 from accounts.forms import UserForm
-from accounts.tasks import send_mail_new_user_register
+from accounts.tasks import send_mail_new_user_register, send_mail_for_reset_password
 
 # Create your views here.
 
@@ -46,11 +46,11 @@ def forgot_password(request):
         if email and User.objects.filter(email=email).exists():
             user = User.objects.get(email=email)
             obj, created = ForgotPassword.get_reset_token(user=user)
+
             if request.GET.get('otp'):
                 if not obj.otp:
                     obj.otp = random.randint(123456,987654)
                     obj.save()
-                print(obj.otp)
                 link = reverse('reset-password-otp')
                 if not created:
                     ctx = {'message':'Please check your email for otp','link':link}
@@ -59,8 +59,8 @@ def forgot_password(request):
                     ctx = {'message':'An OTP has been sent to your email for password reset valid for 30 seconds','link':link}
 
             else:
-                link = 'http://localhost:8000/resetpassword/{}'.format(obj.unique_key)
-                print(link)
+                pwd_reset_link = reverse('reset-password', kwargs={'key':obj.unique_key})
+                send_mail_for_reset_password(user, pwd_reset_link)
                 if not created:
                     ctx = {'message':'Please check your email for password reset link'}
                 else:

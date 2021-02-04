@@ -22,9 +22,9 @@
     <label for="inputPassword" class="visually-hidden">Password</label>
     <input type="password" id="inputPassword" class="form-control" placeholder="Password" name="password" required>
     <button class="w-100 btn btn-lg btn-primary" type="submit">Sign in</button>
-    <a href="{% url 'forgot-password' %}"> Forgot Password via Email</a>
+    <a href="{% url 'forgot-password' %}"> Reset Password via Email</a>
     <br>
-    <a href="{% url 'forgot-password' %}?otp=true"> Forgot Password via OTP</a>
+    <a href="{% url 'forgot-password' %}?otp=true"> Reset Password via OTP</a>
     <br>
     <a href="{% url 'register' %}"> Register </a>
   </form>
