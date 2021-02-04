@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 from django.urls import reverse
 from accounts.forms import UserForm
+from accounts.tasks import send_mail_new_user_register
 
 # Create your views here.
 
@@ -117,6 +118,10 @@ def reset_password_otp(request):
         confirm_password = request.POST.get('confirmpassword')
         otp = request.POST.get('otp')
 
+        if not otp.isnumeric():
+            ctx = {'error':'Invalid OTP','invalid':True}
+            return render(request, 'resetpasswordotp.html',ctx)
+
         obj = ForgotPassword.objects.filter(otp=otp).first()
 
         if not obj:
@@ -152,6 +157,9 @@ def register(request):
         form = UserForm(request.POST)
         if form.is_valid():
             user_obj = form.save()
+            pwd_reset_link = reverse('forgot-password')
+            send_mail_new_user_register(user_obj, pwd_reset_link)
+
             return redirect('/')
 
     else:
