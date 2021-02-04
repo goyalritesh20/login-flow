@@ -26,6 +26,9 @@ class ForgotPassword(models.Model):
     @classmethod
     def get_reset_token(cls, user):
         obj, created = cls.objects.get_or_create(user=user,defaults={'unique_key': uuid.uuid4().hex},)
+        if obj.is_expired():
+            obj.delete()
+            return cls.get_reset_token(user)
         return (obj, created)
 
     def __str__(self):
