@@ -6,14 +6,15 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class UserForm(ModelForm):
-    first_name = forms.CharField(max_length=150, required=True)
-    email = forms.EmailField(max_length=254, required=True)
+    first_name = forms.CharField(label="First Name", max_length=150, required=True)
+    email = forms.EmailField(label="Email", max_length=254, required=True)
 
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
         for field in self.fields:
-            print(self.fields[field].widget)
+            # print(self.fields[field].label, self.fields[field].widget)
             self.fields[field].widget.attrs['class'] = 'form-control'
+            self.fields[field].widget.attrs['placeholder'] = self.fields[field].label
 
     class Meta:
         model = User
@@ -22,7 +23,6 @@ class UserForm(ModelForm):
             'bio': Textarea(attrs={'rows': 3}),
         }
         labels = {
-            'first_name': 'First Name',
             'last_name' : 'Last Name',
             'dob' : 'Birth Date',
         }
