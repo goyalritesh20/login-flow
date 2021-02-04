@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 from django.urls import reverse
 from accounts.forms import UserForm
+from accounts.tasks import send_mail_new_user_register, send_mail_for_reset_password
 
 # Create your views here.
 
@@ -44,12 +45,12 @@ def forgot_password(request):
         email = request.POST.get('email')
         if email and User.objects.filter(email=email).exists():
             user = User.objects.get(email=email)
-            obj, created = ForgotPassword.objects.get_or_create(user=user,defaults={'unique_key': uuid.uuid4().hex},)
+            obj, created = ForgotPassword.get_reset_token(user=user)
+
             if request.GET.get('otp'):
                 if not obj.otp:
                     obj.otp = random.randint(123456,987654)
                     obj.save()
-                print(obj.otp)
                 link = reverse('reset-password-otp')
                 if not created:
                     ctx = {'message':'Please check your email for otp','link':link}
@@ -58,8 +59,8 @@ def forgot_password(request):
                     ctx = {'message':'An OTP has been sent to your email for password reset valid for 30 seconds','link':link}
 
             else:
-                link = 'http://localhost:8000/resetpassword/{}'.format(obj.unique_key)
-                print(link)
+                pwd_reset_link = reverse('reset-password', kwargs={'key':obj.unique_key})
+                send_mail_for_reset_password(user, pwd_reset_link)
                 if not created:
                     ctx = {'message':'Please check your email for password reset link'}
                 else:
@@ -117,6 +118,10 @@ def reset_password_otp(request):
         confirm_password = request.POST.get('confirmpassword')
         otp = request.POST.get('otp')
 
+        if not otp.isnumeric():
+            ctx = {'error':'Invalid OTP','invalid':True}
+            return render(request, 'resetpasswordotp.html',ctx)
+
         obj = ForgotPassword.objects.filter(otp=otp).first()
 
         if not obj:
@@ -152,6 +157,11 @@ def register(request):
         form = UserForm(request.POST)
         if form.is_valid():
             user_obj = form.save()
+            obj, created = ForgotPassword.get_reset_token(user=user_obj)
+
+            pwd_reset_link = reverse('reset-password', kwargs={'key':obj.unique_key})
+            send_mail_new_user_register(user_obj, pwd_reset_link)
+
             return redirect('/')
 
     else:

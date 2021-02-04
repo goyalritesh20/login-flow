@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
@@ -19,8 +20,16 @@ class ForgotPassword(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
 
     def is_expired(self):
-        seconds = 30
+        seconds = 120
         return (timezone.now() - self.created_on).seconds > seconds
+
+    @classmethod
+    def get_reset_token(cls, user):
+        obj, created = cls.objects.get_or_create(user=user,defaults={'unique_key': uuid.uuid4().hex},)
+        if obj.is_expired():
+            obj.delete()
+            return cls.get_reset_token(user)
+        return (obj, created)
 
     def __str__(self):
         return '{}'.format(self.user.username)

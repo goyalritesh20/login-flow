@@ -9,15 +9,13 @@
     <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
     <meta name="generator" content="Hugo 0.79.0">
     {% block title %}
-    <title>Home</title>
+      <title>Home</title>
     {% endblock %}
 
     <link rel="canonical" href="https://getbootstrap.com/docs/5.0/examples/sign-in/">
 
-    
-
     <!-- Bootstrap core CSS -->
-<link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
 
     <style>
       .bd-placeholder-img {
@@ -35,19 +33,19 @@
       }
     </style>
 
-
     <!-- Custom styles for this template -->
     <link href="{% static 'signin.css' %}" rel="stylesheet">
   </head>
-  <body class="text-center">
+  <body>
 
+    <main class="form-signin text-center">
+      <img class="mb-4" src="{% static 'bootstrap-logo.svg' %}" alt="" width="72" height="57">
+      {% block body %}
 
-<main class="form-signin">
-    {% block body %}
+      {% endblock %}
 
-  {% endblock %}
-</main>
-
+      <p class="mt-5 mb-3 text-muted">&copy; 2020-2021</p>
+    </main>
 
 
   </body>
