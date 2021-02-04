@@ -45,7 +45,7 @@ def forgot_password(request):
         email = request.POST.get('email')
         if email and User.objects.filter(email=email).exists():
             user = User.objects.get(email=email)
-            obj, created = ForgotPassword.objects.get_or_create(user=user,defaults={'unique_key': uuid.uuid4().hex},)
+            obj, created = ForgotPassword.get_reset_token(user=user)
             if request.GET.get('otp'):
                 if not obj.otp:
                     obj.otp = random.randint(123456,987654)
@@ -157,7 +157,9 @@ def register(request):
         form = UserForm(request.POST)
         if form.is_valid():
             user_obj = form.save()
-            pwd_reset_link = reverse('forgot-password')
+            obj, created = ForgotPassword.get_reset_token(user=user_obj)
+
+            pwd_reset_link = reverse('reset-password', kwargs={'key':obj.unique_key})
             send_mail_new_user_register(user_obj, pwd_reset_link)
 
             return redirect('/')
