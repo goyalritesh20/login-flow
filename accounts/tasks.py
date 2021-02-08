@@ -1,15 +1,27 @@
 from django.core.mail import send_mail
 from django.conf import settings
-
+from django.core.mail import EmailMessage
 
 def trigger_send_email(subject, message, recipients=[]):
-    send_mail(
+    """[REF: https://docs.djangoproject.com/en/3.1/topics/email/#the-emailmessage-class]
+    """
+    # send_mail(
+    #     subject,
+    #     message,
+    #     settings.DEFAULT_FROM_EMAIL,
+    #     recipients,
+    #     fail_silently = False,
+    # )
+
+    email = EmailMessage(
         subject,
         message,
-        'example@no-reply.com',
+        settings.DEFAULT_FROM_EMAIL,
         recipients,
-        fail_silently = False,
+        headers={'Message-ID': 'testing'},
     )
+    email.send(fail_silently=False)
+
 
 def send_mail_new_user_register(user, pwd_reset_link):
     pwd_reset_link = "{0}{1}".format(settings.PORTAL_URL, pwd_reset_link)
