@@ -13,7 +13,7 @@ import os
 from pathlib import Path
 
 try:
-    from local_settings import (LOCAL_EMAIL_HOST, LOCAL_EMAIL_HOST_USER, LOCAL_EMAIL_HOST_PASSWORD)
+    from config.local_settings import (LOCAL_EMAIL_HOST, LOCAL_EMAIL_HOST_USER, LOCAL_EMAIL_HOST_PASSWORD)
 except Exception:
     LOCAL_EMAIL_HOST = LOCAL_EMAIL_HOST_USER = LOCAL_EMAIL_HOST_PASSWORD = ''
 
@@ -129,7 +129,7 @@ STATIC_URL = '/static/'
 
 AUTH_USER_MODEL = 'accounts.User'
 
-ENVIRONMENT = 'D'
+ENVIRONMENT = 'D' # D-Development, P-Production
 DEFAULT_FROM_EMAIL = 'noreply.acceptted@gmail.com'
 
 # https://docs.djangoproject.com/en/3.1/ref/settings/#email

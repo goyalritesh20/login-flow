@@ -49,7 +49,10 @@ def send_mail_new_user_register(user, pwd_reset_link):
     trigger_send_email(subject, message, recipients)
 
 
-def send_mail_for_user_login(user, device_info):
+def send_mail_for_user_login(userdevice):
+    user = userdevice.user
+    access_at = userdevice.created_at.strftime("%B %d, %Y %H:%M:%S %Z(%z)")
+
     subject = 'Portal security alert: Sign-in'
     message = """
     Hello {user_fname} {user_lname},
@@ -58,22 +61,18 @@ def send_mail_for_user_login(user, device_info):
 
     When: {access_at}
     Device IP: {device_ip}
-    Device: {device_type} {os_type} {os_version} from {browser_type} {browser_version}
+    Device: {additional_info}
 
-    If this was you, you can disregard this message. <link>Otherwise, please let us know.</link>
+    If this was you, you can disregard this message. Otherwise, please let us know.
 
     Thanks!
     Portal Team
     """.format(
         user_fname=user.first_name,
         user_lname=user.last_name,
-        access_at=device_info.get('access_at'),
-        device_ip = device_info.get('ip'),
-        device_type = device_info.get('device_type'),
-        os_type=device_info.get('os_type'),
-        os_version=device_info.get('os_version'),
-        browser_type=device_info.get('browser_type'),
-        browser_version=device_info.get('browser_version'),
+        access_at=access_at,
+        device_ip = userdevice.device_ip,
+        additional_info = userdevice.additional_info
     )
 
     recipients = [user.email]
@@ -87,8 +86,7 @@ def send_mail_for_reset_password(user, pwd_reset_link):
     message = """
     Hello {user_fname} {user_lname},
 
-    We have received your request for change of password. This email contains the information
-    that you need to change your password
+    We have received your request for change of password. This email contains the information that you need to change your password
 
     You can reset you password using following link:
     {pwd_reset_link}

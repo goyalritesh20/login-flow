@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse
 import uuid, random
-from accounts.models import ForgotPassword
+from accounts.models import ForgotPassword, UserDevice
 from django.contrib.auth import get_user_model
 User = get_user_model()
 from django.urls import reverse
@@ -59,7 +59,15 @@ def user_login(request):
                 login(request, user)
 
                 user_agent_info = fetch_user_agent_info(request)
-                send_mail_for_user_login(user, user_agent_info)
+                additional_info = "{} {} {} from {} {}".format(user_agent_info['device_type'],user_agent_info['os_type'],user_agent_info['os_version'],user_agent_info['browser_type'],user_agent_info['browser_version'],)
+                obj, created = UserDevice.objects.get_or_create(
+                    user=request.user,
+                    device_ip=user_agent_info['ip'],
+                    device_type=user_agent_info['device_type'],
+                    defaults={'additional_info':additional_info}
+                    )
+                print(obj.id, created, obj)
+                # send_mail_for_user_login(user, user_agent_info)
 
                 return redirect('/')
             else:

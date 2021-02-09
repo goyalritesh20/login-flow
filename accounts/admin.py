@@ -1,5 +1,5 @@
 from django.contrib import admin
-from accounts.models import ForgotPassword
+from accounts.models import ForgotPassword, UserDevice
 from django.contrib.auth import get_user_model
 User = get_user_model()
 from django.utils.translation import gettext, gettext_lazy as _
@@ -7,6 +7,7 @@ from django.utils.translation import gettext, gettext_lazy as _
 # Register your models here.
 
 admin.site.register(ForgotPassword)
+admin.site.register(UserDevice)
 # admin.site.register(User)
 
 @admin.register(User)
