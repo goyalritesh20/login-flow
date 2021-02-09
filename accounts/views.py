@@ -8,51 +8,48 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 from django.urls import reverse
 from accounts.forms import UserForm
-from accounts.tasks import send_mail_new_user_register, send_mail_for_reset_password
+from accounts.tasks import send_mail_new_user_register, send_mail_for_reset_password, send_mail_for_user_login
 from django.utils import timezone
 
 # Create your views here.
-
-@login_required
-def home_view(request):
+def fetch_user_agent_info(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
         ip = x_forwarded_for.split(',')[0]
     else:
         ip = request.META.get('REMOTE_ADDR')
 
-    device_type = ""
-    browser_type = ""
-    browser_version = ""
-    os_type = ""
-    os_version = ""
-
     if request.user_agent.is_mobile:
         device_type = "Mobile"
-    if request.user_agent.is_tablet:
+    elif request.user_agent.is_tablet:
         device_type = "Tablet"
-    if request.user_agent.is_pc:
+    elif request.user_agent.is_pc:
         device_type = "PC"
+    else:
+        device_type = 'Unknown'
 
-    browser_type = request.user_agent.browser.family
-    browser_version = request.user_agent.browser.version_string
-    os_type = request.user_agent.os.family
-    os_version = request.user_agent.os.version_string
-
-
-    context = {
+    user_agent_info = {
         "ip": ip,
         "device_type": device_type,
-        "browser_type": browser_type,
-        "browser_version": browser_version,
-        "os_type":os_type,
-        "os_version":os_version,
+        "browser_type": request.user_agent.browser.family,
+        "browser_version": request.user_agent.browser.version_string,
+        "os_type": request.user_agent.os.family,
+        "os_version": request.user_agent.os.version_string,
         "access_at": timezone.now().strftime("%B %d, %Y %H:%M:%S %Z(%z)")
     }
+    return user_agent_info
 
-    return render(request,'home.html',context)
+
+@login_required
+def home_view(request):
+    context = fetch_user_agent_info(request)
+
+    return render(request,'home.html', context)
+
 
 def user_login(request):
+    template_name = 'userlogin.html'
+
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -60,15 +57,19 @@ def user_login(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
+
+                user_agent_info = fetch_user_agent_info(request)
+                send_mail_for_user_login(user, user_agent_info)
+
                 return redirect('/')
             else:
                 ctx = {'error':'Incorrect username and password'}
-                return render(request,'userlogin.html',ctx)
+                return render(request, template_name, ctx)
         else:
             ctx = {'error':'Invalid username and password'}
-            return render(request,'userlogin.html',ctx)
+            return render(request, template_name, ctx)
 
-    return render(request,'userlogin.html')
+    return render(request, template_name)
 
 
 def logout_view(request):
