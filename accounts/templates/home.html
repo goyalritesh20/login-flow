@@ -9,6 +9,15 @@
 {% block body %}
 
     <h1>Hello World !!</h1>
+    <h3>You are visiting from :</h3>
+    <ul>
+        <li>When: {{access_at}}</li>
+        <li>IP Address : {{ip}}</li>
+        <li>Device: {{ device_type}}</li>
+        <li>Browser: {{browser_type}} {{browser_version}}</li>
+        <li>OS: {{os_type}} {{os_version}}</li>
+    </ul>
+
     <a href="{% url 'logout-view'%}">Logout</a>
 
 {% endblock %}
