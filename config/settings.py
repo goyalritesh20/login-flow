@@ -12,6 +12,11 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 import os
 from pathlib import Path
 
+try:
+    from config.local_settings import (LOCAL_EMAIL_HOST, LOCAL_EMAIL_HOST_USER, LOCAL_EMAIL_HOST_PASSWORD)
+except Exception:
+    LOCAL_EMAIL_HOST = LOCAL_EMAIL_HOST_USER = LOCAL_EMAIL_HOST_PASSWORD = ''
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -37,6 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_user_agents',
+    'rest_framework',
     'accounts.apps.AccountsConfig',
 ]
 
@@ -48,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_user_agents.middleware.UserAgentMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -122,14 +130,27 @@ STATIC_URL = '/static/'
 
 AUTH_USER_MODEL = 'accounts.User'
 
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.sendgrid.net'
-# EMAIL_PORT = 25  # 25,587(for unencrypted/TLS connections), 465(for SSL connections)
-# EMAIL_USE_TLS = False
-# EMAIL_HOST_USER = 'apikey'
-# EMAIL_HOST_PASSWORD = 'XXXXXXXX'
+ENVIRONMENT = 'D' # D-Development, P-Production
+DEFAULT_FROM_EMAIL = 'noreply.acceptted@gmail.com'
 
-EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'log', 'emails') # change this to a proper location
+# https://docs.djangoproject.com/en/3.1/ref/settings/#email
+if 'P' in ENVIRONMENT:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = LOCAL_EMAIL_HOST
+    EMAIL_PORT = 25  # 25,587(for unencrypted/TLS connections), 465(for SSL connections)
+    EMAIL_USE_TLS = False
+    EMAIL_HOST_USER = LOCAL_EMAIL_HOST_USER
+    EMAIL_HOST_PASSWORD = LOCAL_EMAIL_HOST_PASSWORD
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+    EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'log', 'emails') # change this to a proper location
 
 PORTAL_URL = 'http://localhost:8000'
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    # 'DEFAULT_PERMISSION_CLASSES': [
+    #     'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    # ]
+}

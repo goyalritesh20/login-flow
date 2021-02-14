@@ -1,15 +1,27 @@
 from django.core.mail import send_mail
 from django.conf import settings
-
+from django.core.mail import EmailMessage
 
 def trigger_send_email(subject, message, recipients=[]):
-    send_mail(
+    """[REF: https://docs.djangoproject.com/en/3.1/topics/email/#the-emailmessage-class]
+    """
+    # send_mail(
+    #     subject,
+    #     message,
+    #     settings.DEFAULT_FROM_EMAIL,
+    #     recipients,
+    #     fail_silently = False,
+    # )
+
+    email = EmailMessage(
         subject,
         message,
-        'example@no-reply.com',
+        settings.DEFAULT_FROM_EMAIL,
         recipients,
-        fail_silently = False,
+        headers={'Message-ID': 'testing'},
     )
+    email.send(fail_silently=False)
+
 
 def send_mail_new_user_register(user, pwd_reset_link):
     pwd_reset_link = "{0}{1}".format(settings.PORTAL_URL, pwd_reset_link)
@@ -37,14 +49,44 @@ def send_mail_new_user_register(user, pwd_reset_link):
     trigger_send_email(subject, message, recipients)
 
 
+def send_mail_for_user_login(userdevice):
+    user = userdevice.user
+    access_at = userdevice.created_at.strftime("%B %d, %Y %H:%M:%S %Z(%z)")
+
+    subject = 'Portal security alert: Sign-in'
+    message = """
+    Hello {user_fname} {user_lname},
+
+    Someone signed-in to your account.
+
+    When: {access_at}
+    Device IP: {device_ip}
+    Device: {additional_info}
+
+    If this was you, you can disregard this message. Otherwise, please let us know.
+
+    Thanks!
+    Portal Team
+    """.format(
+        user_fname=user.first_name,
+        user_lname=user.last_name,
+        access_at=access_at,
+        device_ip = userdevice.device_ip,
+        additional_info = userdevice.additional_info
+    )
+
+    recipients = [user.email]
+    trigger_send_email(subject, message, recipients)
+
+
+
 def send_mail_for_reset_password(user, pwd_reset_link):
     pwd_reset_link = "{0}{1}".format(settings.PORTAL_URL, pwd_reset_link)
     subject = "Reset Your Password"
     message = """
     Hello {user_fname} {user_lname},
 
-    We have received your request for change of password. This email contains the information
-    that you need to change your password
+    We have received your request for change of password. This email contains the information that you need to change your password
 
     You can reset you password using following link:
     {pwd_reset_link}
