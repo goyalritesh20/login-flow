@@ -23,6 +23,7 @@ urlpatterns += [
     path('class-api/users/', views.UserListAPI.as_view()),
     path('class-api/user/<int:pk>/', views.UserDetailAPI.as_view()),
     path('api/login/',views.UserLoginAPI.as_view(),name='user-login-api'),
+    path('api/forgotpassword/',views.ForgetPasswordAPT.as_view(),name='forgot-password-api'),
 ]
 
 

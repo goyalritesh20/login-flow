@@ -15,7 +15,7 @@ from django.utils import timezone
 from django.http import HttpResponse, JsonResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
-from accounts.serializers import UserSerializer, UserLoginSerializer
+from accounts.serializers import UserSerializer, UserLoginSerializer, ForgotPasswordSerializer
 from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework.response import Response
@@ -337,5 +337,29 @@ class UserLoginAPI(APIView):
 
             detail = {'detail':'Please enter valid Username and Password'}
             return Response(detail, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ForgetPasswordAPT(APIView):
+    def post(self, request, format=None):
+        serializer = ForgotPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.data.get('email')
+            if email and User.objects.filter(email=email).exists():
+                user = User.objects.get(email=email)
+                obj, created = ForgotPassword.get_reset_token(user=user)
+
+                pwd_reset_link = reverse('reset-password', kwargs={'key':obj.unique_key})
+                send_mail_for_reset_password(user, pwd_reset_link)
+                if not created:
+                    response = {'detail':'Please check your email for password reset link'}
+                    return Response(response, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    response = {'message':'A link has been sent to your email for password reset'}
+                    return Response(response, status=status.HTTP_201_CREATED)
+
+            response = {'message':'Please enter valid email address'}
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

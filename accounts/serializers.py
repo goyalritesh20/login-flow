@@ -14,6 +14,11 @@ class UserLoginSerializer(serializers.Serializer):
     password = serializers.CharField(required=True, allow_blank=False)
 
 
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True, allow_blank=False)
+
+
+
 # class UserSerializer(serializers.Serializer):
 #     id = serializers.IntegerField(read_only=True)
 #     username = serializers.CharField(required=True, allow_blank=False, max_length=100)
