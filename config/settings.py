@@ -42,8 +42,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'accounts.apps.AccountsConfig',
     'django_user_agents',
+    'rest_framework',
+    'accounts.apps.AccountsConfig',
 ]
 
 MIDDLEWARE = [
@@ -145,3 +146,11 @@ else:
     EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'log', 'emails') # change this to a proper location
 
 PORTAL_URL = 'http://localhost:8000'
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    # 'DEFAULT_PERMISSION_CLASSES': [
+    #     'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    # ]
+}
