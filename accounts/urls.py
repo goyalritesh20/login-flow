@@ -17,17 +17,23 @@ urlpatterns = [
 ]
 
 urlpatterns += [
+    path('api-auth/', include('rest_framework.urls')),
 
     path('api/users/', views.user_list_api, name='user-list-api'),
-    path('api/user/<int:pk>/', views.user_detail_api, name='user-detail-api'),
+    path('api/users/<int:pk>/', views.user_detail_api, name='user-detail-api'),
     path('class-api/users/', views.UserListAPI.as_view()),
-    path('class-api/user/<int:pk>/', views.UserDetailAPI.as_view()),
+    path('class-api/users/<int:pk>/', views.UserDetailAPI.as_view()),
     path('api/login/',views.UserLoginAPI.as_view(),name='user-login-api'),
     path('api/forgotpassword/',views.ForgetPasswordAPT.as_view(),name='forgot-password-api'),
 ]
 
 
 urlpatterns = format_suffix_patterns(urlpatterns)
+
+from rest_framework.authtoken import views
+urlpatterns += [
+    path('api-token-auth/', views.obtain_auth_token)
+]
 
 
 # from django.urls import path, include

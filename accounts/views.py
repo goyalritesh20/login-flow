@@ -16,10 +16,11 @@ from django.http import HttpResponse, JsonResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
 from accounts.serializers import UserSerializer, UserLoginSerializer, ForgotPasswordSerializer
-from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import generics, permissions
+from rest_framework.decorators import api_view, permission_classes
 
 # Create your views here.
 def fetch_user_agent_info(request):
@@ -245,8 +246,8 @@ def user_list_api(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([permissions.IsAuthenticated])
 def user_detail_api(request, pk):
     """
     Retrieve, update or delete a code snippet.
@@ -297,6 +298,8 @@ class UserDetailAPI(APIView):
     """
     Retrieve, update or delete a snippet instance.
     """
+    permission_classes = [permissions.IsAuthenticated]
+
     def get_object(self, pk):
         try:
             return User.objects.get(pk=pk)
